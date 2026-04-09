@@ -20,13 +20,11 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central)
         layout = QVBoxLayout(central)
 
-        # Приветствие
         lbl = QLabel(f"Добро пожаловать, {self.current_user.username}!")
         lbl.setFont(QFont("Arial", 14, QFont.Bold))
         lbl.setAlignment(Qt.AlignCenter)
         layout.addWidget(lbl)
 
-        # Только для администратора - управление пользователями
         if self.current_user.is_admin():
             group = QGroupBox("Управление пользователями")
             group.setFont(QFont("Arial", 11, QFont.Bold))
@@ -50,7 +48,6 @@ class MainWindow(QMainWindow):
             layout.addWidget(group)
             self.load_users()
 
-        # Кнопка выхода
         logout_btn = QPushButton("Выйти")
         logout_btn.setMaximumWidth(150)
         logout_btn.clicked.connect(self.logout)

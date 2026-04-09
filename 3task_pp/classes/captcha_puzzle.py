@@ -1,11 +1,11 @@
 import random
 import os
 from PyQt5.QtWidgets import QWidget, QPushButton, QMessageBox
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap, QIcon, QColor
+from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QPixmap, QIcon
+
 
 class CaptchaPuzzle(QWidget):
-
     def __init__(self):
         super().__init__()
         self.order = [0, 1, 2, 3]
@@ -44,7 +44,6 @@ class CaptchaPuzzle(QWidget):
         self.buttons = [btn1, btn2, btn3, btn4]
 
         self.setFixedSize(450, 250)
-
         self.shuffle()
 
     def update_display(self):
@@ -52,7 +51,6 @@ class CaptchaPuzzle(QWidget):
             idx = self.order[i]
             btn.setIcon(QIcon(self.pixmaps[idx]))
             btn.setIconSize(btn.size())
-
             if self.selected == i:
                 btn.setStyleSheet("border: 3px solid green; padding: 0; margin: 0;")
             else:
@@ -72,14 +70,6 @@ class CaptchaPuzzle(QWidget):
         random.shuffle(self.order)
         self.selected = -1
         self.update_display()
-
-    def check(self):
-        if self.order == self.correct:
-            QMessageBox.information(self, "Капча", "Пазл собран верно!")
-            return True
-        else:
-            QMessageBox.warning(self, "Капча", "Пазл собран неверно!")
-            return False
 
     def is_solved(self):
         return self.order == self.correct

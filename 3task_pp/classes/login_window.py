@@ -5,15 +5,13 @@ from classes.user_repository import UserRepository
 from classes.captcha_puzzle import CaptchaPuzzle
 from classes.main_window import MainWindow
 
+
 class LoginWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.failed_count = 0
-        self.current_username = ""
         self.user_repo = UserRepository()
         self.setWindowTitle("Авторизация - Информационная система")
-        self.setFixedSize(450, 600)
-        self.setMinimumSize(400, 550)
+        self.setMinimumSize(450, 600)
         self.init_ui()
 
     def init_ui(self):
@@ -28,12 +26,14 @@ class LoginWindow(QMainWindow):
 
         self.login_input = QLineEdit()
         self.login_input.setPlaceholderText("Логин")
+        self.login_input.setMaxLength(100)
         self.login_input.setMinimumHeight(35)
         layout.addWidget(self.login_input)
 
         self.password_input = QLineEdit()
         self.password_input.setPlaceholderText("Пароль")
         self.password_input.setEchoMode(QLineEdit.Password)
+        self.password_input.setMaxLength(255)
         self.password_input.setMinimumHeight(35)
         layout.addWidget(self.password_input)
 
@@ -55,46 +55,29 @@ class LoginWindow(QMainWindow):
         username = self.login_input.text().strip()
         password = self.password_input.text()
 
+        # Проверка заполнения полей
         if not username or not password:
             QMessageBox.warning(self, "Ошибка", "Заполните логин и пароль")
-            return
+            return  # ВАЖНО: возврат из метода
 
+        # Проверка пазла
         if not self.puzzle.is_solved():
-            self.failed_count += 1
             QMessageBox.warning(self, "Ошибка", "Соберите пазл правильно!")
             self.puzzle.reset()
             self.password_input.clear()
-            self.check_lock(username)
-            return
+            return  # ВАЖНО: возврат из метода
+
+        # Аутентификация
         user, error, is_locked = self.user_repo.authenticate(username, password)
 
         if user:
-            self.failed_count = 0
-            self.current_username = ""
             QMessageBox.information(self, "Успех", "Вы успешно авторизовались")
             self.main_window = MainWindow(user)
             self.main_window.show()
             self.close()
         else:
-            self.failed_count += 1
             QMessageBox.critical(self, "Ошибка", error)
             self.puzzle.reset()
             self.password_input.clear()
-            self.check_lock(username)
+            return  # ВАЖНО: возврат из метода
 
-    def check_lock(self, username):
-        if self.failed_count >= 3:
-            user = self.user_repo.get_by_username(username)
-            if user:
-                self.user_repo.lock_user(user.id)
-                QMessageBox.critical(self, "Блокировка",
-                                     "Вы трижды ввели неверные данные или неправильно собрали пазл.\n"
-                                     "Учетная запись заблокирована. Обратитесь к администратору.")
-            else:
-                QMessageBox.critical(self, "Блокировка",
-                                     "Вы трижды ввели неверные данные.\n"
-                                     "Учетная запись заблокирована. Обратитесь к администратору.")
-
-            self.login_input.setEnabled(False)
-            self.password_input.setEnabled(False)
-            self.btn.setEnabled(False)
